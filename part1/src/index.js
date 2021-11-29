@@ -1,83 +1,81 @@
 import React, { useState } from 'react'
 import ReactDOM from 'react-dom'
+import "./index.css"
 
 
-const Statistic = (props) => {
-  return (
-      <tr><td>{props.text}</td><td>{props.value}</td></tr>
-  )
-}
-const Statistics = (props) => {
-  const averagePositive = (props.objState.good  / props.objState.allState) * 100;
-  const averageScore = props.objState.allState / 3;
-
-  if (props.objState.allState > 0) {
-    return (
-      <div>
-        <br/><strong>Statistics </strong><br/>
-        <table>
-          <tbody>
-            <Statistic text={"good"}     value={props.objState.good}/>
-            <Statistic text={"neutral"}  value={props.objState.neutral}/>
-            <Statistic text={"bad"}      value={props.objState.bad}/>
-            <Statistic text={"All"}      value={props.objState.allState}/>
-            <Statistic text={"Avarage"}  value={averageScore}/>
-            <Statistic text={"Positive"} value={averagePositive}/>
-          </tbody>
-        </table>
-      </div>
-    )
-  }
-
+const Anecdote = ({anecdotes, selected, voteAnecdotes, title}) => {
   return (
     <div>
-      No feedBack Given
-    </div>
-
-  )
-}
-
-const Button = ({ onClick, text }) => (  <button onClick={onClick}>    {text}  </button>)
-
-const App = () => {
-  const [objState, setObjState] = useState({ good:0, neutral:0, bad:0, allState:0 })
-
-  const addGood = () => {
-    const newStates = {
-      ...objState,
-      good: objState.good + 1,
-      allState: objState.allState + 1
-    }
-    setObjState(newStates);
-  }
-
-  const addNeutral = () => {
-    const newStates = {
-      ...objState,
-      neutral: objState.neutral + 1,
-      allState: objState.allState + 1
-    }
-    setObjState(newStates);
-  }
-
-  const addBad = () => {
-    const newStates = {
-      ...objState,
-      bad: objState.bad + 1,
-      allState: objState.allState + 1
-    }
-    setObjState(newStates);
-  }
-  return (
-    <div>
-      <Button onClick={addGood} text='Good' />      
-      <Button onClick={addNeutral} text='Neutral' />   
-      <Button onClick={addBad} text='Bad' />   
-      <Statistics objState={objState} ></Statistics>
+      <div className="title">{title}</div>
+      <p>{anecdotes[selected]}</p>
+      <p>has {voteAnecdotes[selected]} votes</p>
     </div>
   )
 }
 
-ReactDOM.render(<App />, 
+
+const Button = ({onClick, text}) => {
+  return (
+    <button onClick={onClick}>{text}</button>
+  )
+}
+
+
+const App = ({anecdotes}) => {
+  const [selected, setSelected] = useState(0)
+  const [voteAnecdotes, setVoteAnecdotes] = useState([0,0,0,0,0,0])
+  const [maxVoteAnecdote, setmaxVoteAnecdote] = useState(0)
+
+  const randomAnecdotes = () =>{
+    const randomNumber = Math.floor(Math.random() * 6);
+    setSelected(randomNumber);
+  }
+
+  const vote = () =>{
+    console.log(selected)
+    const copyVoteAnecdotes = [...voteAnecdotes];
+    copyVoteAnecdotes[selected] += 1
+    setVoteAnecdotes(copyVoteAnecdotes);
+
+    const maxAnecdote = indexOfMaxAnecdote(copyVoteAnecdotes)
+    setmaxVoteAnecdote(maxAnecdote);
+  }
+
+  const indexOfMaxAnecdote = (copyVoteAnecdotes) => {
+    let max = 0;
+    let index = 0;
+    for(let i=0; i < copyVoteAnecdotes.length; i++){
+      if(copyVoteAnecdotes[i] > max){
+        index = i 
+        max =  copyVoteAnecdotes[i]
+      }
+    }
+    return index;
+  }
+
+  return (
+    <div>
+      <Anecdote anecdotes={anecdotes} selected={selected} voteAnecdotes={voteAnecdotes} title={"Anecdote of the day"}/><br/>
+      <Button onClick={vote} text={"vote"}/>
+      <Button onClick={randomAnecdotes} text={"next anecdote"}/>
+      <Anecdote anecdotes={anecdotes} selected={maxVoteAnecdote} voteAnecdotes={voteAnecdotes} title={"Anecdote with most votes"}/><br/>
+     
+    </div>
+  )
+}
+
+
+const anecdotes = [
+  'If it hurts, do it more often',
+  'Adding manpower to a late software project makes it later!',
+  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
+  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
+  'Premature optimization is the root of all evil.',
+  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
+]
+
+
+ReactDOM.render(
+  <App anecdotes={anecdotes} />,
   document.getElementById('root')
 )
